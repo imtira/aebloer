@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Æblør</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link rel="stylesheet" type="text/css" href="css/darktooltip.css">
+  <link rel="stylesheet" type="text/css" href="css/index.css">
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="js/darktooltip.js"></script>
+  <script src="js/index.js"></script>
+</head>
+
+<body>
+  <nav role="navigation" class="pink darken-3">
+    <div class="nav-wrapper">
+      <ul class="hide-on-med-and-down">
+        <li>
+          <a href="#!" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <ul id="slide-out" class="sidenav">
+    <span class="title">
+      Æblør
+    </span>
+    <hr>
+    <li><a class="subheader">Strings</a></li>
+    <li><a class="waves-effect" href="#hash-textarea">Hash</a></li>
+    <li><a class="waves-effect" href="#charset-selector">Generate</a></li>
+    <li><a class="subheader">Networking</a></li>
+    <li><a class="waves-effect" href="#address">Scan Ports</a></li>
+    <li><a class="waves-effect" href="#">Time Responses</a></li>
+    <li><a class="waves-effect" href="#">Resolve Addresses</a></li>
+    <li><a class="subheader">Files</a></li>
+  </ul>
+
+  <div class="container">
+    <h5>Hash</h5>
+    <div class="input-field">
+      <textarea id="hash-textarea" onkeyup="hash(this.value)" class="materialize-textarea"
+        autocomplete="off"></textarea>
+      <label for="hash-textarea">String to hash</label>
+    </div>
+    <div class="input-field">
+      <textarea id="hash-output" class="materialize-textarea" readonly="readonly" autocomplete="off"></textarea>
+      <label for="hash-output" id="hash-output-label">Output</label>
+    </div>
+    <div class="input-field col s12">
+      <select id="hash-algorithm">
+        <optgroup label="MD">
+          <option>MD4</option>
+          <option>MD5</option>
+        </optgroup>
+        <optgroup label="SHA">
+          <option>SHA1</option>
+          <option>SHA2-224</option>
+          <option>SHA2-256</option>
+          <option>SHA2-384</option>
+          <option>SHA2-512</option>
+          <option>SHA3-224</option>
+          <option>SHA3-256</option>
+          <option>SHA3-384</option>
+          <option>SHA3-512</option>
+        </optgroup>
+        <optgroup label="Blake2">
+          <option>Blake2b-256</option>
+          <option>Blake2b-384</option>
+          <option>Blake2b-512</option>
+          <option>Blake2s-256</option>
+        </optgroup>
+      </select>
+      <label style="left: 0;" for="hash-algorithm">Algorithm</label>
+    </div>
+    <hr>
+    <h5>Generate</h5>
+    <div class="row">
+      <div class="col s3">
+        <h6>Charset</h6>
+        <form id="charset-selector" autocomplete="off">
+          <p>
+            <label>
+              <input name="charset" type="radio" value="default" checked class="pink darken-3" />
+              <span class="radio-text">Default</span>
+              <span class="charset-tooltip" data-tooltip="Every character key on an ANSI QWERTY keyboard.">?</span>
+            </label>
+          </p>
+          <p>
+            <label>
+              <input name="charset" type="radio" value="custom-charset" class="pink darken-3" />
+              <span>
+                <input id="custom-charset" style="height: 30px;" readonly="readonly">
+              </span>
+            </label>
+          </p>
+        </form>
+        <h6>Length</h6>
+        <span>
+          <input id="generate-length" type="number" min="1" placeholder="100" autocomplete="off">
+        </span>
+        <a style="margin-left: 20% !important;" class="waves-effect waves-purple btn pink darken-3"
+          onclick="generate_string()"><i class="material-icons left">autorenew</i>Regen.</a>
+      </div>
+      <div class="col s9" id="generate-container">
+        <textarea id="generate-output" class="materialize-textarea" readonly="readonly" autocomplete="off"></textarea>
+        <label for="generate-output">Output</label>
+      </div>
+    </div>
+    <hr>
+    <h5>Scan Ports</h5>
+    <div class="row">
+      <div class="col s3">
+        <h6>Address</h6>
+        <p>
+          <span>
+            <input id="address" style="height: 30px;">
+          </span>
+        </p>
+        <form id="port-range" autocomplete="off">
+          <h6>Range</h6>
+          <p>
+            <label>
+              <input name="port-range" type="radio" value="default" checked class="pink darken-3" />
+              <span class="radio-text">Default</span>
+              <span class="port-range-tooltip" data-tooltip="1-65565 (All)">?</span>
+            </label>
+          </p>
+          <p>
+            <label>
+              <input name="port-range" type="radio" value="custom-port-range" class="pink darken-3" />
+              <span>
+                <input id="custom-port-low" style="height: 30px; width: 40%;" readonly="readonly" min="1"
+                  placeholder="1" type="number">
+                to
+                <input id="custom-port-high" style="height: 30px; width: 40%;" readonly="readonly" min="1"
+                  placeholder="65565" type="number">
+              </span>
+            </label>
+          </p>
+        </form>
+      </div>
+      <div class="col s3">
+        <h6>Timeout</h6>
+        <form id="timeout-selector" autocomplete="off">
+          <p>
+            <label>
+              <input name="timeout" type="radio" value="default" checked class="pink darken-3" type="number"
+                placeholder="500" />
+              <span class="radio-text">Default</span>
+              <span class="timeout-tooltip" data-tooltip="500ms">?</span>
+            </label>
+          </p>
+          <p>
+            <label>
+              <input name="timeout" type="radio" value="custom-timeout" class="pink darken-3" />
+              <span>
+                <input id="custom-timeout" style="height: 30px;" readonly="readonly">
+              </span>
+            </label>
+          </p>
+        </form>
+        <a style="margin-left: 25% !important; margin-top: 10%;" class="waves-effect waves-purple btn pink darken-3"
+          onclick="scan_ports()"><i class="material-icons left">track_changes</i>Scan</a>
+      </div>
+      <div class="col s6">
+        <h6>Open Ports</h6>
+        <textarea id="open-ports" class="materialize-textarea" readonly="readonly"
+          autocomplete="off">TODO: OPEN PORTS STRING IS RECIEVED, OUTPUT DOESNT APPEAR.</textarea>
+      </div>
+    </div>
+    <hr>
+    <h5>Time Responses</h5>
+    <hr>
+    <h5>Resolve Addresses</h5>
+    <!---->
+    <hr>
+    <h5>Strip EXIF</h5>
+    <hr>
+  </div>
+</body>
+
+</html>
