@@ -6,6 +6,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
 	"flag"
@@ -15,6 +16,8 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"net/http/httptrace"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -25,6 +28,8 @@ import (
 	"golang.org/x/crypto/md4"
 	"golang.org/x/crypto/sha3"
 	"golang.org/x/sync/semaphore"
+
+	"github.com/gorilla/handlers"
 )
 
 // Response is returned to the frontend after working with whatever data is provided.
@@ -43,10 +48,6 @@ func main() {
 	/* / endpoint */
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fileServer.ServeHTTP(w, r)
-		if *verbose {
-			log.Printf("Connection from %v (Referer: %v, UA: %v)\n",
-				r.Header.Get("X-Forwarded-For"), r.Referer(), r.UserAgent())
-		}
 	})
 	/* /hash endpoint */
 	http.HandleFunc("/hash", func(w http.ResponseWriter, r *http.Request) {
@@ -57,9 +58,6 @@ func main() {
 		toHash := r.PostFormValue("string")
 		algorithm := r.PostFormValue("hash")
 		result, err := Hash(toHash, algorithm)
-		if *verbose {
-			log.Printf("Called /hash: %v\n", Response{Error: err.Error(), Result: result})
-		}
 		if err != nil {
 			JSONResponse(w, Response{Error: err.Error()})
 			return
@@ -79,9 +77,6 @@ func main() {
 		}
 		charset := r.PostFormValue("charset")
 		result := Generate(length, charset)
-		if *verbose {
-			log.Printf("Called /generate: %v\n", Response{Error: err.Error(), Result: result})
-		}
 		JSONResponse(w, Response{Result: result})
 	})
 	/* /scan endpoint */
@@ -108,14 +103,53 @@ func main() {
 			JSONResponse(w, Response{Error: err.Error()})
 			return
 		}
-		if *verbose {
-			log.Printf("Called /generate: %v\n", Response{Error: err.Error(), Result: result})
-		}
 		JSONResponse(w, Response{Result: openPorts})
+	})
+	/* /resolve endpoint */
+	http.HandleFunc("/resolve", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		address := r.PostFormValue("address")
+		response, err := Resolve(address)
+		if err != nil {
+			JSONResponse(w, Response{Error: err.Error()})
+			return
+		}
+		JSONResponse(w, Response{Result: response})
+	})
+	/* /timeresponses endpoint */
+	http.HandleFunc("/timeresponses", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		address := r.PostFormValue("address")
+		useHTTPS := r.PostFormValue("useHTPS")
+		if !strings.Contains(address, "http") {
+			if useHTTPS == "false" {
+				address = fmt.Sprintf("http://%v", address)
+			} else {
+				address = fmt.Sprintf("https://%v", address)
+			}
+		} else if useHTTPS == "false" {
+			address = strings.Replace(address, "https", "http", 1)
+		}
+		response, err := ResponseTime(address)
+		if err != nil {
+			JSONResponse(w, Response{Error: err.Error()})
+			return
+		}
+		JSONResponse(w, Response{Result: response})
 	})
 	/* Start server */
 	log.Printf("Starting on port %v\n", *port)
-	log.Fatal(http.ListenAndServe(":"+*port, nil))
+	if *verbose {
+		http.ListenAndServe(":"+*port, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
+	} else {
+		http.ListenAndServe(":"+*port, nil)
+	}
 }
 
 // JSONResponse crafts a JSON response and writes it to a http.ResponseWriter header
@@ -264,3 +298,39 @@ func Resolve(address string) (string, error) {
 	}
 	return strings.TrimRight(strings.Join(resolved, ", "), "."), err
 }
+
+// ResponseTime times how long it takes for an address to respond
+func ResponseTime(address string) (string, error) {
+	var (
+		start, dns, tlsHandshake time.Time
+	)
+	var result strings.Builder
+	req, err := http.NewRequest("GET", address, nil)
+
+	trace := &httptrace.ClientTrace{
+		DNSStart: func(dsi httptrace.DNSStartInfo) {
+			dns = time.Now()
+		},
+		DNSDone: func(ddi httptrace.DNSDoneInfo) {
+			result.WriteString(fmt.Sprintf("DNS: %v\n", time.Since(dns)))
+		},
+		TLSHandshakeStart: func() {
+			tlsHandshake = time.Now()
+		},
+		TLSHandshakeDone: func(cs tls.ConnectionState, err error) {
+			result.WriteString(fmt.Sprintf("Handshake: %v\n",
+				time.Since(tlsHandshake)))
+		},
+		GotFirstResponseByte: func() {
+			result.WriteString(fmt.Sprintf("First byte: %v\n", time.Since(start)))
+		},
+	}
+	/*
+	 * Connect to the specified address and time it
+	 */
+	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
+	start = time.Now()
+	_, err = http.DefaultTransport.RoundTrip(req)
+	result.WriteString(fmt.Sprintf("Total: %v\n", time.Since(start)))
+	return result.String(), err
+} /* https://stackoverflow.com/questions/48077098/ */

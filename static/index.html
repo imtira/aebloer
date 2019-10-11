@@ -31,13 +31,14 @@
     </span>
     <hr>
     <li><a class="subheader">Strings</a></li>
-    <li><a class="waves-effect" href="#hash-textarea">Hash</a></li>
-    <li><a class="waves-effect" href="#charset-selector">Generate</a></li>
+    <li><a class="waves-effect" onclick="scroll_to('#hash-textarea')">Hash</a></li>
+    <li><a class="waves-effect" onclick="scroll_to('#charset-selector')">Generate</a></li>
     <li><a class="subheader">Networking</a></li>
-    <li><a class="waves-effect" href="#address">Scan Ports</a></li>
-    <li><a class="waves-effect" href="#">Time Responses</a></li>
-    <li><a class="waves-effect" href="#">Resolve Addresses</a></li>
+    <li><a class="waves-effect" onclick="scroll_to('#address')">Scan Ports</a></li>
+    <li><a class="waves-effect" onclick="scroll_to('#')">Time Responses</a></li>
+    <li><a class="waves-effect" onclick="scroll_to('#resolve-address')">Resolve Addresses</a></li>
     <li><a class="subheader">Files</a></li>
+    <li><a class="waves-effect" onclick="scroll_to('#strip-exif')">Strip Exif</a></li>
   </ul>
 
   <div class="container">
@@ -103,7 +104,7 @@
         <span>
           <input id="generate-length" type="number" min="1" placeholder="100" autocomplete="off">
         </span>
-        <a style="margin-left: 20% !important;" class="waves-effect waves-purple btn pink darken-3"
+        <a style="margin-left: 5% !important;" class="waves-effect waves-purple btn pink darken-3"
           onclick="generate_string()"><i class="material-icons left">autorenew</i>Regen.</a>
       </div>
       <div class="col s9" id="generate-container">
@@ -118,7 +119,7 @@
         <h6>Address</h6>
         <p>
           <span>
-            <input id="address" style="height: 30px;">
+            <input id="port-scan-address" style="height: 30px;" autocomplete="off">
           </span>
         </p>
         <form id="port-range" autocomplete="off">
@@ -127,7 +128,7 @@
             <label>
               <input name="port-range" type="radio" value="default" checked class="pink darken-3" />
               <span class="radio-text">Default</span>
-              <span class="port-range-tooltip" data-tooltip="1-65565 (All)">?</span>
+              <span class="port-range-tooltip" data-tooltip="1-65565 (This may take a while)">?</span>
             </label>
           </p>
           <p>
@@ -164,20 +165,77 @@
             </label>
           </p>
         </form>
-        <a style="margin-left: 25% !important; margin-top: 10%;" class="waves-effect waves-purple btn pink darken-3"
-          onclick="scan_ports()"><i class="material-icons left">track_changes</i>Scan</a>
+        <a style="margin-top: 10%;" class="waves-effect waves-purple btn pink darken-3" onclick="scan_ports();"><i
+            class="material-icons left">track_changes</i>Scan</a>
+        <span style="margin-top: 10%; float: right; margin-right: 5%; display: none;"
+          class="preloader-wrapper small active">
+          <span class="spinner-layer spinner-red-only">
+            <span class="circle-clipper left">
+              <span class="circle"></span>
+            </span>
+            <span class="gap-patch">
+              <span class="circle"></span>
+            </span>
+            <span class="circle-clipper right">
+              <span class="circle"></span>
+            </span>
+          </span>
+        </span>
       </div>
       <div class="col s6">
         <h6>Open Ports</h6>
-        <textarea id="open-ports" class="materialize-textarea" readonly="readonly"
-          autocomplete="off">TODO: OPEN PORTS STRING IS RECIEVED, OUTPUT DOESNT APPEAR.</textarea>
+        <textarea id="open-ports-output" class="materialize-textarea" readonly="readonly" autocomplete="off"></textarea>
+        <label for="id-ports-output">Output</label>
       </div>
     </div>
     <hr>
     <h5>Time Responses</h5>
+    <div class="row">
+      <div class="col s3">
+        <h6>Address</h6>
+        <p>
+          <span>
+            <input id="timeresponses-address" style="height: 30px;" autocomplete="off">
+          </span>
+        </p>
+        <a style="margin-left: 15%;" class="waves-effect waves-purple btn pink darken-3" onclick="timeresponses();"><i
+            class="material-icons left">track_changes</i>Scan</a>
+        <form>
+          <p>
+            <label>
+              <input id="timeresponses-usehttps" type="checkbox" class="filled-in" checked="checked" />
+              <span>HTTPS</span>
+              <span class="timeresposeshttps-tooltip" data-tooltip="Time responses over the HTTP protocol">?</span>
+            </label>
+          </p>
+        </form>
+      </div>
+      <div class="col s9">
+        <h6>Output</h6>
+        <textarea id="timeresponses-output" class="materialize-textarea" readonly="readonly"
+          autocomplete="off"></textarea>
+        <label for="timeresponses-output">Output</label>
+      </div>
+    </div>
     <hr>
     <h5>Resolve Addresses</h5>
-    <!---->
+    <div class="row">
+      <div class="col s3">
+        <h6>Address</h6>
+        <p>
+          <span>
+            <input id="resolve-address" style="height: 30px;" autocomplete="off">
+          </span>
+        </p>
+        <a style="margin-left: 15%;" class="waves-effect waves-purple btn pink darken-3" onclick="resolve();"><i
+            class="material-icons left">track_changes</i>Scan</a>
+      </div>
+      <div class="col s9">
+        <h6>Output</h6>
+        <textarea id="resolve-output" class="materialize-textarea" readonly="readonly" autocomplete="off"></textarea>
+        <label for="resolve-output">Output</label>
+      </div>
+    </div>
     <hr>
     <h5>Strip EXIF</h5>
     <hr>

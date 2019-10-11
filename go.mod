@@ -8,6 +8,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/andybalholm/cascadia v1.1.0 // indirect
 	github.com/domainr/whois v0.0.0-20180714175948-975c7833b02e
+	github.com/gorilla/handlers v1.4.2
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/zonedb/zonedb v1.0.2459 // indirect
 	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392

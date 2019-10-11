@@ -13,6 +13,11 @@ header, main, footer {
   /* .sidenav-trigger sets display to none for some reason? */
 }
 
+.subheader {
+  font-weight: bold !important;
+  color: #000 !important;
+}
+
 li a {
   outline: none;
 }
@@ -30,7 +35,8 @@ li a {
 
 .charset-tooltip,
 .port-range-tooltip,
-.timeout-tooltip {
+.timeout-tooltip,
+.timeresponsehttps-tooltip {
   vertical-align: super;
 }
 

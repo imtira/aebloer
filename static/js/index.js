@@ -1,4 +1,5 @@
 var sidenav, formSelectElems;
+var xhr = new XMLHttpRequest();
 
 $(document).ready(() => {
   $('.sidenav').sidenav();
@@ -36,8 +37,13 @@ $(document).ready(() => {
   });
 });
 
+function scroll_to(element) {
+  document.querySelector(element).scrollIntoView({
+    behavior: 'smooth'
+  });
+}
+
 function hash(toHash) {
-  var xhr = new XMLHttpRequest();
   var hashType = $('select').val();
   var output = $('#hash-output');
   xhr.open('POST', '/hash', true);
@@ -59,7 +65,6 @@ function hash(toHash) {
 }
 
 function generate_string() {
-  var xhr = new XMLHttpRequest();
   var output = $('#generate-output');
   xhr.open('POST', '/generate', true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -89,21 +94,21 @@ function generate_string() {
 }
 
 function scan_ports() {
-  var xhr = new XMLHttpRequest();
-  var open_ports_output = $('#open-ports');
+  var output = $('#open-ports-output');
   xhr.open('POST', '/scan', true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-  xhr.onreadystagechange = () => {
+  xhr.onreadystatechange = () => {
     if (xhr.readyState === XMLHttpRequest.DONE) {
-      var response = JSON.parse(xhr.requestText);
+      var response = JSON.parse(xhr.responseText);
       if (response.error) {
-        open_ports_output.val(response.error);
+        output.val(response.error);
       } else {
-        open_ports_output.val(response.openPorts);
+        output.val(response.result);
+        $('.preloader-wrapper').delay(200).fadeOut();
       }
     }
   };
-  var address = $('#address').val();
+  var address = $('#port-scan-address').val();
   var timeout;
   var port_low, port_high;
   if ($('#custom-port-low').prop('readonly') === false
@@ -121,6 +126,45 @@ function scan_ports() {
   } else {
     timeout = "500";
   }
+  $('.preloader-wrapper').delay(200).fadeIn();
   xhr.send('address=' + encodeURIComponent(address) + '&portLow=' +
     encodeURIComponent(port_low) + '&portHigh=' + encodeURIComponent(port_high) + '&timeout=' + encodeURIComponent(timeout));
+}
+
+function resolve() {
+  var address = $('#resolve-address').val();
+  var output = $('#resolve-output');
+  xhr.open('POST', '/resolve', true);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      var response = JSON.parse(xhr.responseText);
+      if (response.error) {
+        output.val(response.error);
+      } else {
+        output.val(response.result);
+      }
+    }
+  }
+  xhr.send('address=' + encodeURIComponent(address));
+}
+
+function timeresponses() {
+  var address = $('#timeresponses-address').val();
+  var useHTTPS = $('#timeresponses-usehttps').is(':checked');
+  var output = $('#timeresponses-output');
+  xhr.open('POST', '/timeresponses', true);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.onreadystatechange = () => {
+    console.log(xhr.responseText)
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      var response = JSON.parse(xhr.responseText);
+      if (response.error) {
+        output.val(response.error);
+      } else {
+        output.val(response.result);
+      }
+    }
+  }
+  xhr.send('address=' + encodeURIComponent(address) + '&useHTTPS=' + encodeURIComponent(useHTTPS));
 }
