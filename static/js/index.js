@@ -22,17 +22,24 @@ $(document).ready(() => {
     generate_string();
   });
   $('#port-range').on('change keyup', () => {
-    if ($('#port-range input[type=\'radio\']:checked').val() === "default") {
+    if ($('#port-range input[type=\'radio\']:checked').val() === 'default') {
       $('#custom-port-low, #custom-port-high').prop('readonly', true);
     } else {
       $('#custom-port-low, #custom-port-high').prop('readonly', false);
     }
   });
   $('#timeout-selector').on('change keyup', () => {
-    if ($('#timeout-selector input[type=\'radio\']:checked').val() === "default") {
+    if ($('#timeout-selector input[type=\'radio\']:checked').val() === 'default') {
       $('#custom-timeout').prop('readonly', true);
     } else {
       $('#custom-timeout').prop('readonly', false);
+    }
+  });
+  $('#exif-image-upload').on('change', () => {
+    if ($('#viewstrip-exif input[type=\'radio\']:checked').val() === 'view') {
+      view_exif();
+    } else {
+      strip_exif();
     }
   });
 });
@@ -131,6 +138,25 @@ function scan_ports() {
     encodeURIComponent(port_low) + '&portHigh=' + encodeURIComponent(port_high) + '&timeout=' + encodeURIComponent(timeout));
 }
 
+function timeresponses() {
+  var address = $('#timeresponses-address').val();
+  var output = $('#timeresponses-output');
+  xhr.open('POST', '/timeresponses', true);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      var response = JSON.parse(xhr.responseText);
+      if (response.error) {
+        output.val(response.error);
+      } else {
+        output.val(response.result.trim());
+        M.textareaAutoResize(output);
+      }
+    }
+  }
+  xhr.send('address=' + encodeURIComponent(address));
+}
+
 function resolve() {
   var address = $('#resolve-address').val();
   var output = $('#resolve-output');
@@ -149,22 +175,34 @@ function resolve() {
   xhr.send('address=' + encodeURIComponent(address));
 }
 
-function timeresponses() {
-  var address = $('#timeresponses-address').val();
-  var useHTTPS = $('#timeresponses-usehttps').is(':checked');
-  var output = $('#timeresponses-output');
-  xhr.open('POST', '/timeresponses', true);
+function view_exif() {
+  var files_base64 = get_images();
+  xhr.open('POST', '/exif', true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xhr.onreadystatechange = () => {
-    console.log(xhr.responseText)
     if (xhr.readyState === XMLHttpRequest.DONE) {
+      console.log(xhr.responseText);
       var response = JSON.parse(xhr.responseText);
       if (response.error) {
         output.val(response.error);
       } else {
-        output.val(response.result);
+
       }
     }
   }
-  xhr.send('address=' + encodeURIComponent(address) + '&useHTTPS=' + encodeURIComponent(useHTTPS));
+  JSON.stringify(files_base64)
+  xhr.send('mode=' + encodeURIComponent($('#viewstrip-exif input[type=\'radio\']:checked').val()) + '&files=' + encodeURIComponent(JSON.stringify(files_base64)));
+}
+
+function get_images() {
+  var files = $('#exif-image-upload').prop('files');
+  var files_base64 = {};
+  for (var i = 0, file; file = files[i]; i++) {
+    var reader = new FileReader();
+    reader.onload = e => {
+      files_base64[i] = e.target.result;
+    }
+    reader.readAsDataURL(file);
+  }
+  return files_base64;
 }

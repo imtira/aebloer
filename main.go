@@ -105,6 +105,23 @@ func main() {
 		}
 		JSONResponse(w, Response{Result: openPorts})
 	})
+	/* /timeresponses endpoint */
+	http.HandleFunc("/timeresponses", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		address := r.PostFormValue("address")
+		if !strings.Contains(address, "http") {
+			address = fmt.Sprintf("https://%v", address)
+		}
+		response, err := ResponseTime(address)
+		if err != nil {
+			JSONResponse(w, Response{Error: err.Error()})
+			return
+		}
+		JSONResponse(w, Response{Result: response})
+	})
 	/* /resolve endpoint */
 	http.HandleFunc("/resolve", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
@@ -119,29 +136,16 @@ func main() {
 		}
 		JSONResponse(w, Response{Result: response})
 	})
-	/* /timeresponses endpoint */
-	http.HandleFunc("/timeresponses", func(w http.ResponseWriter, r *http.Request) {
+	/* /exif endpoint */
+	http.HandleFunc("/exif", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		address := r.PostFormValue("address")
-		useHTTPS := r.PostFormValue("useHTPS")
-		if !strings.Contains(address, "http") {
-			if useHTTPS == "false" {
-				address = fmt.Sprintf("http://%v", address)
-			} else {
-				address = fmt.Sprintf("https://%v", address)
-			}
-		} else if useHTTPS == "false" {
-			address = strings.Replace(address, "https", "http", 1)
-		}
-		response, err := ResponseTime(address)
-		if err != nil {
-			JSONResponse(w, Response{Error: err.Error()})
-			return
-		}
-		JSONResponse(w, Response{Result: response})
+		//mode := r.PostFormValue("mode")
+		files := r.PostFormValue("files")
+		log.Println(files)
+		JSONResponse(w, Response{Result: files})
 	})
 	/* Start server */
 	log.Printf("Starting on port %v\n", *port)

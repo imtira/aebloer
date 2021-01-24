@@ -78,3 +78,8 @@ textarea.materialize-textarea:focus:not([readonly]) + label,
 .select-dropdown li.optgroup > span {
   color: #000008 !important;
 }
+
+input:focus {
+  border-bottom: 1px solid #ad1457 !important;
+  box-shadow: 0 1px 0 0 #ad1457 !important;
+}
